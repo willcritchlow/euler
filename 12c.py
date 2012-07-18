@@ -1,0 +1,103 @@
+def triangle(n, already_found):
+    if n == 1:
+        return 1, already_found
+    try:
+        tri = already_found[n]
+    except:
+        tri_minus, already_found = triangle(n-1, already_found)
+        tri = tri_minus + n
+        already_found.append(tri)
+    return tri, already_found
+
+def prime_factors(n, cache, primes):
+    "Returns all the prime factors of a positive integer"
+    factors = []
+    orig_n = n
+    d = 0
+    last_d = 10
+    while (n > 1):
+        try:
+            for f in cache[n]:
+                factors.append(f)
+            return factors, cache
+        except:
+            try:
+                prime = primes[d]
+            except:
+                print "n = %s, orig_n = %s, last prime = %s, d = %s, last_d = %s, FAIL" % (n, orig_n, primes[d-1], d, last_d)
+                exit()
+            while (n%prime==0):
+                factors.append(prime)
+                n /= prime
+                last_d = d
+            d = d + 1
+        if d > last_d**2 or d >= len(primes):
+            break
+    cache[orig_n] = factors
+    return factors, cache
+
+def find_exponents(array):
+    current = 0
+    exponent = 1
+    exponents = []
+    for x in array:
+        if x == current:
+            exponent = exponent + 1
+        else:
+            if current != 0:
+                exponents.append(exponent)
+            current = x
+            exponent = 1
+    exponents.append(exponent)
+    return exponents
+
+def num_factors(exponents):
+    base = 1
+    for e in exponents:
+        base = base * (e + 1)
+    return base
+
+cache = {}
+max = 10000
+sieve = range(2, max)
+
+i = 2
+counter = 0
+while i != 0:
+    for j in range(i*2,max,i):
+        sieve[j - 2] = 0
+    try:
+        i = min(x for x in sieve if x > i)
+        if i > 2*counter:
+            print i
+            counter = i
+    except:
+        i = 0
+
+primes = [x for x in sieve if x != 0]
+#f = open('./tmp', 'w')
+#f.write(repr(primes))
+#f.close()
+
+x = 1
+already_found = []
+max_f = 0
+max_x = 0
+max_tri = 0
+while True:
+    tri, already_found = triangle(x, already_found)
+    factors, cache = prime_factors(tri, cache, primes)
+    f = num_factors(find_exponents(factors))
+    if f > 500:
+        print x
+        print tri
+        print f
+        exit()
+    if f > max_f:
+        max_f = f
+        max_x = x
+        max_tri = tri
+    x = x+1
+    if x%100 == 0:
+        print "passing through %s" % x
+        print "current max factors: %s, at: #%s triangle number %s" % (max_f, max_x, max_tri)
